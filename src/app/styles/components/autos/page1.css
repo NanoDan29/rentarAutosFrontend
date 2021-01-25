@@ -1,0 +1,25 @@
+.img {
+    background-image: url("../../../img/auto2.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed
+}
+
+.imgfondo {
+    background-image: url("../../../img/fondo.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+img{
+    display: block;
+}
+
+nav {
+    position: fixed !important;
+    top: 0;
+    width: 100%;
+}
