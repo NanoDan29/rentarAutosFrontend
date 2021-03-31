@@ -1,49 +1,50 @@
-import types from '../types'
-import { actionDelUsuario } from './actionUsuario'
-import Swal from 'sweetalert2'
+import types from '../types';
+import { fetchWithouthToken,fetchWithToken } from '../helper/fetch';
+import { decode } from 'jsonwebtoken';
 
-import ClienteAxios from '../../config/axios'
-import { getData } from './actionUsuario'
 
-export const logoutSync = () => {
-    const { logout } = types
-    return { type: logout }
-
+export const startLogin = (data) => async ( callback ) => {
+    const resp = await fetchWithouthToken({uri:'/usuario/login',method:'POST',data})
+    const token = await resp.json();
+    localStorage.setItem('token', token.token);
+    const { uid, username } = decode(token.token);
+    callback( login({ uid, username }) );
 }
+
+export const login = ( payload ) => {
+    const { login:type } = types;
+    return {
+        type,
+        payload
+    }
+}
+
 export const logout = () => {
-    return (callback) => {
-        callback(logoutSync())
-        callback(actionDelUsuario())
+    const { logout:type } = types;
+    return { type }
+}
+
+export const startLogout = () => (callback) => {
+    localStorage.clear();
+    callback( logout );
+}
+
+
+export const startChecking = () => async (callback) => {
+    const resp = await fetchWithToken({uri:'/refreshToken'});
+    const tokenResp = await resp.json();
+
+    if( tokenResp.ok ){
+        localStorage.setItem('token', tokenResp.token);
+        const { uid, username } = decode(tokenResp.token);
+        callback( login({ uid, username }) );
+    }else{
+        callback( startLogout() );
     }
+    callback( stopCheckingAuth() );
 }
 
-export const loginSync = (estado=false) => {
-    const { login } = types
-    return { type: login, payload: { loginState: estado } }
+export const stopCheckingAuth = () => {
+    const { checking:type } = types;
+    return { type }
 }
-
-export const login = (email, password) => {
-    return async (callback) => {
-        try {
-            let consulta = await ClienteAxios.get(`/usuario/login?email=${email}&password=${password}`)
-            let verificarUsuario = consulta.data.resBcrypt
-            if (verificarUsuario) {
-                let usuario = consulta.data.usuario
-                callback(getData(usuario))
-                callback(loginSync(verificarUsuario))
-            }else{
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'El Usuario o Contraseña estan mal ingresados revise los campos!',
-                  })
-            }
-          
-            
-
-        } catch (error) {
-            console.log(error)
-        }
-    }
-}
-

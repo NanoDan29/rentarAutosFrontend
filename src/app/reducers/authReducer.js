@@ -1,15 +1,29 @@
-import types from '../types'
-const init = { loginState: false }
+import types from '../types';
+
+const init = { 
+    uid: '',
+    username:  '',
+    checking: true
+}
 
 const authReducer = (state = init, action) => {
-    const { login, logout } = types
+    const { login, logout, checking } = types;
 
     switch (action.type) {
         case login:
-            state = { ...state, loginState: action.payload.loginState }
+            state = { 
+                ...state, 
+                ...action.payload
+            }
             break;
         case logout:
             state = init
+            break;
+        case checking:
+            state = {
+                ...state,
+                checking: false
+            }
             break;
         default:
           
